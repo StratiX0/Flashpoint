@@ -136,6 +136,7 @@ GameObject:
   - component: {fileID: 84850669}
   - component: {fileID: 84850668}
   - component: {fileID: 84850674}
+  - component: {fileID: 84850675}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -177,7 +178,7 @@ CapsuleCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 84850667}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: a4401a7e0f782ac48859534906d125f2, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -281,12 +282,26 @@ MonoBehaviour:
   jumpForce: 10
   readyToJump: 1
   groundDrag: 5
-  airDrag: 1
   airMultiplier: 0.4
   gravityScale: 19.62
   sensitivity: 8
   playerCamera: {fileID: 330585545}
   orientation: {fileID: 84850672}
+--- !u!114 &84850675
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 84850667}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1617a2c4aa8c194cbcb736df76cfd96, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fire1: {fileID: 887040066258801937, guid: b2a7dc9552d06ba46af2610c86e21790, type: 3}
+  damage: 10
+  playerCamera: {fileID: 330585545}
 --- !u!1 &106130860
 GameObject:
   m_ObjectHideFlags: 0
