@@ -300,7 +300,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   fire1: {fileID: 887040066258801937, guid: b2a7dc9552d06ba46af2610c86e21790, type: 3}
-  damage: 10
+  fire2: {fileID: -807476887666851220, guid: b2a7dc9552d06ba46af2610c86e21790, type: 3}
+  primaryDamage: 10
+  secondaryDamage: 1.2
   playerCamera: {fileID: 330585545}
 --- !u!1 &106130860
 GameObject:
