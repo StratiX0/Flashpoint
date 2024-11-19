@@ -41,7 +41,11 @@ public class Shoot : MonoBehaviour
         RaycastHit hit;
         if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out hit))
         {
-            Debug.Log(hit.transform.name);
+            TargetHealth targetHealth = hit.transform.GetComponent<TargetHealth>();
+            if (targetHealth != null)
+            {
+                targetHealth.TakeDamage(damage);
+            }
         }
     }
 }
