@@ -5,16 +5,21 @@ using UnityEngine.VFX;
 public class Shoot : MonoBehaviour
 {
     private static Shoot Instance { get; set; }
+    
+    [SerializeField] private Camera playerCamera;
+    
     [Header("Input Actions")]
     [SerializeField] private InputActionReference fire1;
     [SerializeField] private InputActionReference fire2;
     private bool _fireOneState;
     private float _fireTwoState;
     
-    public float primaryDamage = 10f;
-    public float secondaryDamage = 1.2f;
+    [Header("Weapon Settings")]
+    public float primaryDamage;
+    public float secondaryDamage;
+    public float impactForceOne;
+    public float impactForceTwo;
 
-    [SerializeField] private Camera playerCamera;
     
     [Header("VFX")]
     [SerializeField] private VisualEffect muzzleFlash;
@@ -46,15 +51,7 @@ public class Shoot : MonoBehaviour
     void Update()
     {
         GetInput();
-        if (_fireOneState)
-        {
-            ShootFireOne();
-        }
-        
-        if (_fireTwoState != 0f)
-        {
-            ShootFireTwo();
-        }
+        ManageShoot();
     }
     
     // Get the input from the player
@@ -63,10 +60,25 @@ public class Shoot : MonoBehaviour
         _fireOneState = fire1.action.triggered;
         _fireTwoState = fire2.action.ReadValue<float>();
     }
+
+    // Manages the shooting of the player
+    private void ManageShoot()
+    {
+        if (_fireOneState) // If the player is shooting with the primary shoot method
+        {
+            ShootFireOne();
+        }
+        
+        if (_fireTwoState != 0f) // If the player is shooting with the secondary shoot method
+        {
+            ShootFireTwo();
+        }
+    }
     
     // Shoots a single bullet on click
     private void ShootFireOne()
     {
+        // Plays the muzzle flash and sets the muzzle light to active
         muzzleFlash.Play();
         muzzleLight.SetActive(true);
         
@@ -79,20 +91,18 @@ public class Shoot : MonoBehaviour
                 targetHealth.TakeDamage(primaryDamage); // Deals damage to the target
             }
             
+            ShootForce(hit, impactForceOne); // Applies a force to the object that has been hit
+            
             Instantiate(impactEffect, hit.point, Quaternion.LookRotation(hit.normal), impactEffectFolder.transform); // Creates an impact effect on what has been hit
         }
         
-        Invoke(nameof(ResetMuzzleLight), muzzleLightTime);
+        Invoke(nameof(ResetMuzzleLight), muzzleLightTime); // Resets the muzzle light after a certain amount of time
     }
     
+    // Resets the muzzle light
     private void ResetMuzzleLight()
     {
         muzzleLight.SetActive(false);
-    }
-    
-    private void DestroyImpact(GameObject impact)
-    {
-        Destroy(impact);
     }
     
     // Shoots a continuous beam
@@ -106,6 +116,17 @@ public class Shoot : MonoBehaviour
             {
                 targetHealth.TakeDamage(secondaryDamage * Time.deltaTime); // Deals damage to the target
             }
+            
+            ShootForce(hit, impactForceTwo); // Applies a force to the object that has been hit
+        }
+    }
+
+    // Applies a force to the object that has been hit
+    private void ShootForce(RaycastHit hit, float impactForce)
+    {
+        if (hit.rigidbody != null)
+        {
+            hit.rigidbody.AddForce(-hit.normal * impactForce, ForceMode.Force);
         }
     }
 }
