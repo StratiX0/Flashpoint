@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.VFX;
 
 public class Shoot : MonoBehaviour
 {
@@ -14,6 +15,10 @@ public class Shoot : MonoBehaviour
     public float secondaryDamage = 1.2f;
 
     [SerializeField] private Camera playerCamera;
+    
+    [SerializeField] private VisualEffect muzzleFlash;
+    [SerializeField] private GameObject muzzleLight;
+    [SerializeField] private float muzzleLightTime;
     
     private void Awake()
     {
@@ -59,27 +64,37 @@ public class Shoot : MonoBehaviour
     // Shoots a single bullet on click
     private void ShootFireOne()
     {
+        muzzleFlash.Play();
+        muzzleLight.SetActive(true);
+        
         RaycastHit hit;
-        if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out hit))
+        if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out hit)) // Shoots a raycast from the camera
         {
             TargetHealth targetHealth = hit.transform.GetComponent<TargetHealth>();
             if (targetHealth != null)
             {
-                targetHealth.TakeDamage(primaryDamage);
+                targetHealth.TakeDamage(primaryDamage); // Deals damage to the target
             }
         }
+        
+        Invoke(nameof(ResetMuzzleLight), muzzleLightTime);
+    }
+    
+    private void ResetMuzzleLight()
+    {
+        muzzleLight.SetActive(false);
     }
     
     // Shoots a continuous beam
     private void ShootFireTwo()
     {
         RaycastHit hit;
-        if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out hit))
+        if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out hit)) // Shoots a raycast from the camera
         {
             TargetHealth targetHealth = hit.transform.GetComponent<TargetHealth>();
             if (targetHealth != null)
             {
-                targetHealth.TakeDamage(secondaryDamage * Time.deltaTime);
+                targetHealth.TakeDamage(secondaryDamage * Time.deltaTime); // Deals damage to the target
             }
         }
     }
