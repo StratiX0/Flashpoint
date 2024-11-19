@@ -34,6 +34,9 @@ public class TargetHealth : MonoBehaviour
     // Set health to a specific value
     public void SetHealth(float value)
     {
+        if (value >= 0f) SetMaterial(aliveMat);
+
+        if (value <= 0f) value = 0f;
         health = value;
     }
     
