@@ -25,12 +25,12 @@
                 },
                 {
                     "name": "Crouch",
-                    "type": "Button",
+                    "type": "Value",
                     "id": "c26b4ca1-1e2b-47c2-b933-ad2ae5d5ba8c",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "Digital",
                     "processors": "",
-                    "interactions": "Hold",
-                    "initialStateCheck": false
+                    "interactions": "",
+                    "initialStateCheck": true
                 },
                 {
                     "name": "Dash",

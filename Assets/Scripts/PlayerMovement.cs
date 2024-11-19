@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
 public class PlayerMovement : MonoBehaviour
@@ -11,15 +12,33 @@ public class PlayerMovement : MonoBehaviour
     [Header("Input Actions")]
     [SerializeField] private InputActionReference moveAction;
     [SerializeField] private InputActionReference jumpAction;
+    [SerializeField] private InputActionReference crouchAction;
     [SerializeField] private InputActionReference lookAction;
     
-    [Header("Movement Settings")]
+    [Header("Walk Settings")]
     [SerializeField] private float speed;
+    [SerializeField] private float groundDrag;
+    private Vector3 _moveDirection;
+    
+    [Header("Crouch Settings")]
+    [SerializeField] private float crouchSpeed;
+    private bool _applyCrouchingForce;
+    [SerializeField] private float crouchYScale;
+    [SerializeField] private float standYScale;
+    
+    [Header("Slope Handling")]
+    public float maxSlopeAngle;
+    private RaycastHit _slopeHit;
+    private bool _exitSlope;
+    
+    [Header("Jump Settings")]
     [SerializeField] private float jumpForce;
     [SerializeField] private bool readyToJump;
-    [SerializeField] private float groundDrag;
     [SerializeField] private float airMultiplier;
+    
+    [Header("Physics Settings")]
     [SerializeField] private float gravityScale;
+    private bool _isGrounded;
     
     [Header("Mouse Settings")]
     [SerializeField] private float sensitivity;
@@ -27,12 +46,23 @@ public class PlayerMovement : MonoBehaviour
 
     private Vector2 MoveVector { get; set; }
     private float JumpButton { get; set; }
+    private float CrouchButton { get; set; }
     private Vector2 MouseDirection { get; set; }
     
     private Rigidbody _rb;
-    [SerializeField] private Camera playerCamera;
     
+    [Header("Camera Settings")]
+    [SerializeField] private Camera playerCamera;
     public Transform orientation;
+    
+    [Header("States")]
+    public MovementState state;
+    public enum MovementState
+    {
+        Grounded,
+        Croutched,
+        Airborne
+    }
     
     
     private void Awake()
@@ -40,6 +70,7 @@ public class PlayerMovement : MonoBehaviour
         Instance = this;
         moveAction.action.Enable();
         jumpAction.action.Enable();
+        crouchAction.action.Enable();
         lookAction.action.Enable();
     }
 
@@ -47,6 +78,7 @@ public class PlayerMovement : MonoBehaviour
     {
         moveAction.action.Enable();
         jumpAction.action.Enable();
+        crouchAction.action.Enable();
         lookAction.action.Enable();
     }
 
@@ -54,6 +86,7 @@ public class PlayerMovement : MonoBehaviour
     {
         moveAction.action.Disable();
         jumpAction.action.Disable();
+        crouchAction.action.Disable();
         lookAction.action.Disable();
     }
 
@@ -61,6 +94,8 @@ public class PlayerMovement : MonoBehaviour
     {
         _rb = GetComponent<Rigidbody>();
         Cursor.lockState = CursorLockMode.Locked;
+        
+        standYScale = transform.localScale.y;
     }
 
     private void Update()
@@ -73,6 +108,7 @@ public class PlayerMovement : MonoBehaviour
     private void FixedUpdate()
     {
         Movement();
+        StateHandler();
         SpeedControl();
         _rb.AddForce(Vector3.down * gravityScale, ForceMode.Force);
     }
@@ -81,41 +117,71 @@ public class PlayerMovement : MonoBehaviour
     {
         MoveVector = moveAction.action.ReadValue<Vector2>();
         JumpButton = jumpAction.action.ReadValue<float>();
+        CrouchButton = crouchAction.action.ReadValue<float>();
         MouseDirection = lookAction.action.ReadValue<Vector2>();
     }
 
     // Move the player
     private void Movement()
     {
-        Vector3 moveDirection = orientation.forward * MoveVector.y + orientation.right * MoveVector.x;
+        _moveDirection = orientation.forward * MoveVector.y + orientation.right * MoveVector.x;
         
-        if (IsGrounded())
+        if (OnSlope() && !_exitSlope)
         {
-            _rb.AddForce(moveDirection.normalized * (speed * 10f), ForceMode.Force); // Move the player on the ground
+            _rb.AddForce(GetSlopeMoveDirection() * (speed * 20f), ForceMode.Force);
+
+            if (_rb.velocity.y > 0)
+            {
+                _rb.AddForce(Vector3.down * 80f, ForceMode.Force);
+            }
+        }
+        
+        else if (state == MovementState.Grounded)
+        {
+            _rb.AddForce(_moveDirection.normalized * (speed * 10f), ForceMode.Force); // Move the player on the ground
+            _rb.drag = groundDrag;
+        }
+        else if (state == MovementState.Croutched)
+        {
+            _rb.AddForce(_moveDirection.normalized * (crouchSpeed * 10f), ForceMode.Force); // Move the player while crouching
             _rb.drag = groundDrag;
         }
         else
         {
-            _rb.AddForce(moveDirection.normalized * (speed * 10f * airMultiplier), ForceMode.Force); // Move the player in the air
+            _rb.AddForce(_moveDirection.normalized * (speed * 10f * airMultiplier), ForceMode.Force); // Move the player in the air
             _rb.drag = 1;
         }
+        
+        _rb.useGravity = !OnSlope();
     }
 
     // Limit the player's speed
     private void SpeedControl()
     {
-        Vector3 flatVel = new Vector3(_rb.velocity.x, 0, _rb.velocity.z); // Get the velocity on the x and z axis
-        
-        if (flatVel.magnitude > speed)
+        if (OnSlope() && !_exitSlope)
         {
-            Vector3 limitedVel = flatVel.normalized * speed;
-            _rb.velocity = new Vector3(limitedVel.x, _rb.velocity.y, limitedVel.z);
+            if (_rb.velocity.magnitude > speed)
+            {
+                _rb.velocity = _rb.velocity.normalized * speed;
+            }
+        }
+        else
+        {
+            Vector3 flatVel = new Vector3(_rb.velocity.x, 0, _rb.velocity.z); // Get the velocity on the x and z axis
+        
+            if (flatVel.magnitude > speed)
+            {
+                Vector3 limitedVel = flatVel.normalized * speed;
+                _rb.velocity = new Vector3(limitedVel.x, _rb.velocity.y, limitedVel.z);
+            }
         }
     }
 
     // Make the player jump
     private void Jump()
     {
+        _exitSlope = true;
+        
         if (JumpButton != 0 && IsGrounded() && readyToJump)
         {
             readyToJump = false;
@@ -128,7 +194,56 @@ public class PlayerMovement : MonoBehaviour
     private void ResetJump()
     {
         readyToJump = true;
+        _exitSlope = false;
     }
+
+    private void StateHandler()
+    {
+        if (IsGrounded() && CrouchButton == 0f)
+        {
+            state = MovementState.Grounded;
+            transform.localScale = new Vector3(transform.localScale.x, standYScale, transform.localScale.z);
+            _applyCrouchingForce = false;
+        }
+        
+        else if (CrouchButton != 0f)
+        {
+            state = MovementState.Croutched;
+            if (!_applyCrouchingForce && IsGrounded())
+            {
+                transform.localScale = new Vector3(transform.localScale.x, crouchYScale, transform.localScale.z);
+                _rb.AddForce(Vector3.down * 10f, ForceMode.Impulse);
+                _applyCrouchingForce = true;
+            }
+            else
+            {
+                transform.localScale = new Vector3(transform.localScale.x, crouchYScale, transform.localScale.z);
+            }
+        }
+        
+        else
+        {
+            state = MovementState.Airborne;
+        }
+    }
+    
+    private bool OnSlope()
+    {
+        if (Physics.Raycast(transform.position, Vector3.down, out _slopeHit, transform.localScale.y * 0.5f + 0.3f))
+        {
+            float angle = Vector3.Angle(Vector3.up, _slopeHit.normal);
+            return angle < maxSlopeAngle && angle != 0;
+        }
+
+        return false;
+    }
+
+    private Vector3 GetSlopeMoveDirection()
+    {
+        return Vector3.ProjectOnPlane(_moveDirection, _slopeHit.normal).normalized;
+    }
+    
+    
 
     // Look around
     private void Look()
@@ -146,7 +261,16 @@ public class PlayerMovement : MonoBehaviour
     // Check if the player is grounded
     private bool IsGrounded()
     {
-        return Physics.Raycast(transform.position, Vector3.down, 1.1f);
+        if (Physics.Raycast(transform.position, Vector3.down, 1.1f))
+        {
+            _isGrounded = true;
+        }
+        else
+        {
+            _isGrounded = false;
+        }
+        
+        return _isGrounded;
     }
 
 
