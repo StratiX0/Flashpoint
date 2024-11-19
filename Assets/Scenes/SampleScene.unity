@@ -307,6 +307,9 @@ MonoBehaviour:
   muzzleFlash: {fileID: 2040931081}
   muzzleLight: {fileID: 925579397}
   muzzleLightTime: 0.1
+  impactEffect: {fileID: 2673953877026811700, guid: bfe803ba9f99f7749a84fa4a175cb003,
+    type: 3}
+  impactEffectFolder: {fileID: 1984245321}
 --- !u!1 &106130860
 GameObject:
   m_ObjectHideFlags: 0
@@ -1318,6 +1321,7 @@ Transform:
   - {fileID: 1156390049}
   - {fileID: 649140073}
   - {fileID: 1884850271}
+  - {fileID: 1984245322}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &832575517
@@ -2819,6 +2823,37 @@ Transform:
   - {fileID: 2134017049}
   - {fileID: 1484212528}
   - {fileID: 185312900}
+  m_Father: {fileID: 827840071}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1984245321
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1984245322}
+  m_Layer: 0
+  m_Name: ImpactEffects
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1984245322
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1984245321}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
   m_Father: {fileID: 827840071}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2040931080
