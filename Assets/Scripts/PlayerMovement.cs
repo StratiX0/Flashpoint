@@ -101,13 +101,13 @@ public class PlayerMovement : MonoBehaviour
     private void Update()
     {
         GetInput();
-        Look();
-        Jump();
     }
 
     private void FixedUpdate()
     {
         Movement();
+        Jump();
+        Look();
         StateHandler();
         SpeedControl();
         _rb.AddForce(Vector3.down * gravityScale, ForceMode.Force);
