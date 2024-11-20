@@ -207,11 +207,18 @@ public class PlayerMovement : MonoBehaviour
 
     private void StateHandler()
     {
-        if (IsGrounded() && CrouchButton == 0f)
+        if (IsGrounded() && CrouchButton == 0f && CanCrouchUp())
         {
             state = MovementState.Grounded;
             transform.localScale = new Vector3(transform.localScale.x, standYScale, transform.localScale.z);
             _applyCrouchingForce = false;
+        }
+        
+        else if (IsGrounded() && CrouchButton == 0f && !CanCrouchUp())
+        {
+            state = MovementState.Croutched;
+            transform.localScale = new Vector3(transform.localScale.x, crouchYScale, transform.localScale.z);
+            _applyCrouchingForce = true;
         }
         
         else if (CrouchButton != 0f)
@@ -250,8 +257,17 @@ public class PlayerMovement : MonoBehaviour
     {
         return Vector3.ProjectOnPlane(_moveDirection, _slopeHit.normal).normalized;
     }
-    
-    
+
+    private bool CanCrouchUp()
+    {
+        RaycastHit hit;
+        if (Physics.SphereCast(transform.position, transform.localScale.x / 2f, Vector3.up, out hit, crouchYScale * 2f))
+        {
+            return false;
+        }
+
+        return true;
+    }
 
     // Look around
     private void Look()
