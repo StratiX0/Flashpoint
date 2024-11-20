@@ -19,13 +19,13 @@ public class Shoot : MonoBehaviour
     public float secondaryDamage;
     public float impactForceOne;
     public float impactForceTwo;
-
     
     [Header("VFX")]
     [SerializeField] private VisualEffect muzzleFlash;
     [SerializeField] private GameObject muzzleLight;
     [SerializeField] private float muzzleLightTime;
     [SerializeField] private GameObject impactEffect;
+    [SerializeField] private GameObject impactEffectFolder;
     
     private void Awake()
     {
@@ -92,7 +92,7 @@ public class Shoot : MonoBehaviour
             
             ShootForce(hit, impactForceOne); // Applies a force to the object that has been hit
             
-            Instantiate(impactEffect, hit.point, Quaternion.LookRotation(hit.normal), hit.transform); // Creates an impact effect on what has been hit
+            Instantiate(impactEffect, hit.point, Quaternion.LookRotation(hit.normal), impactEffectFolder.transform); // Creates an impact effect on what has been hit
         }
         
         Invoke(nameof(ResetMuzzleLight), muzzleLightTime); // Resets the muzzle light after a certain amount of time
