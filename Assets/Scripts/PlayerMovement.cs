@@ -1,9 +1,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -16,7 +18,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private InputActionReference lookAction;
     
     [Header("Walk Settings")]
-    [SerializeField] private float speed;
+    [SerializeField] private float movementSpeed;
     [SerializeField] private float groundDrag;
     private Vector3 _moveDirection;
     
@@ -39,10 +41,14 @@ public class PlayerMovement : MonoBehaviour
     [Header("Physics Settings")]
     [SerializeField] private float gravityScale;
     private bool _isGrounded;
+    private float _speedValue;
     
     [Header("Mouse Settings")]
     [SerializeField] private float sensitivity;
     private float _cameraPitch;
+    
+    [Header("User Interface")]
+    [SerializeField] private TextMeshProUGUI speedTextUi;
 
     private Vector2 MoveVector { get; set; }
     private float JumpButton { get; set; }
@@ -105,6 +111,8 @@ public class PlayerMovement : MonoBehaviour
 
     private void FixedUpdate()
     {
+        _speedValue = Vector3.Magnitude(_rb.velocity);
+        speedTextUi.text = _speedValue.ToString("F0");
         Movement();
         Jump();
         Look();
@@ -128,7 +136,7 @@ public class PlayerMovement : MonoBehaviour
         
         if (OnSlope() && !_exitSlope)
         {
-            _rb.AddForce(GetSlopeMoveDirection() * (speed * 20f), ForceMode.Force);
+            _rb.AddForce(GetSlopeMoveDirection() * (movementSpeed * 20f), ForceMode.Force);
 
             if (_rb.velocity.y > 0)
             {
@@ -138,7 +146,7 @@ public class PlayerMovement : MonoBehaviour
         
         else if (state == MovementState.Grounded)
         {
-            _rb.AddForce(_moveDirection.normalized * (speed * 10f), ForceMode.Force); // Move the player on the ground
+            _rb.AddForce(_moveDirection.normalized * (movementSpeed * 10f), ForceMode.Force); // Move the player on the ground
             _rb.drag = groundDrag;
         }
         else if (state == MovementState.Croutched)
@@ -148,7 +156,7 @@ public class PlayerMovement : MonoBehaviour
         }
         else
         {
-            _rb.AddForce(_moveDirection.normalized * (speed * 10f * airMultiplier), ForceMode.Force); // Move the player in the air
+            _rb.AddForce(_moveDirection.normalized * (movementSpeed * 10f * airMultiplier), ForceMode.Force); // Move the player in the air
             _rb.drag = 1;
         }
         
@@ -160,18 +168,18 @@ public class PlayerMovement : MonoBehaviour
     {
         if (OnSlope() && !_exitSlope)
         {
-            if (_rb.velocity.magnitude > speed)
+            if (_rb.velocity.magnitude > movementSpeed)
             {
-                _rb.velocity = _rb.velocity.normalized * speed;
+                _rb.velocity = _rb.velocity.normalized * movementSpeed;
             }
         }
         else
         {
             Vector3 flatVel = new Vector3(_rb.velocity.x, 0, _rb.velocity.z); // Get the velocity on the x and z axis
         
-            if (flatVel.magnitude > speed)
+            if (flatVel.magnitude > movementSpeed)
             {
-                Vector3 limitedVel = flatVel.normalized * speed;
+                Vector3 limitedVel = flatVel.normalized * movementSpeed;
                 _rb.velocity = new Vector3(limitedVel.x, _rb.velocity.y, limitedVel.z);
             }
         }
