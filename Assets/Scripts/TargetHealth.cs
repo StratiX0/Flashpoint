@@ -10,14 +10,14 @@ public class TargetHealth : MonoBehaviour
     [SerializeField] private float health;
 
     [Header("Materials")]
-    [SerializeField] private Material aliveMat;
-    [SerializeField] private Material destroyedMat;
+    public Material defaultMat;
+    public Material destroyedMat;
     private Material _currentMat;
     
     private void Awake()
     {
         Instance = this;
-        SetMaterial(aliveMat);
+        SetMaterial(defaultMat);
     }
     
     // Reduces health to give damage
@@ -34,7 +34,7 @@ public class TargetHealth : MonoBehaviour
     // Set health to a specific value
     public void SetHealth(float value)
     {
-        if (value >= 0f) SetMaterial(aliveMat);
+        if (value >= 0f) SetMaterial(defaultMat);
 
         if (value <= 0f) value = 0f;
         health = value;
@@ -53,7 +53,7 @@ public class TargetHealth : MonoBehaviour
     }
 
     // Sets the material of the object
-    private void SetMaterial(Material mat)
+    public void SetMaterial(Material mat)
     {
         Instance.gameObject.GetComponent<Renderer>().material = mat;
     }

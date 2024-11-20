@@ -85,7 +85,8 @@ public class Shoot : MonoBehaviour
         if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out hit)) // Shoots a raycast from the camera
         {
             TargetHealth targetHealth = hit.transform.GetComponent<TargetHealth>();
-            if (targetHealth != null)
+            Target target = hit.transform.GetComponent<Target>();
+            if (targetHealth != null && target != null && (target.GetTargetType() == Target.Type.Tap || target.GetTargetType() == Target.Type.Dual))
             {
                 targetHealth.TakeDamage(primaryDamage); // Deals damage to the target
             }
@@ -111,7 +112,8 @@ public class Shoot : MonoBehaviour
         if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out hit)) // Shoots a raycast from the camera
         {
             TargetHealth targetHealth = hit.transform.GetComponent<TargetHealth>();
-            if (targetHealth != null)
+            Target target = hit.transform.GetComponent<Target>();
+            if (targetHealth != null && target != null && (target.GetTargetType() == Target.Type.Laser || target.GetTargetType() == Target.Type.Dual))
             {
                 targetHealth.TakeDamage(secondaryDamage * Time.deltaTime); // Deals damage to the target
             }
