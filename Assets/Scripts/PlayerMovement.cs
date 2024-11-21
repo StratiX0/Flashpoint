@@ -333,7 +333,7 @@ public class PlayerMovement : MonoBehaviour
             }
         }
         
-        else if (IsGrounded() && CrouchButton == 0)
+        else if (IsGrounded() && CrouchButton == 0f && CanCrouchUp()) // Stand
         {
             state = MovementState.Grounded;
             transform.localScale = new Vector3(transform.localScale.x, standYScale, transform.localScale.z);
@@ -341,23 +341,15 @@ public class PlayerMovement : MonoBehaviour
             _desiredMoveSpeed = walkSpeed;
         }
         
-        // else if (IsGrounded() && CrouchButton == 0f && CanCrouchUp())
-        // {
-        //     state = MovementState.Grounded;
-        //     transform.localScale = new Vector3(transform.localScale.x, standYScale, transform.localScale.z);
-        //     _applyCrouchingForce = false;
-        //     _desiredMoveSpeed = walkSpeed;
-        // }
-        //
-        // else if (IsGrounded() && CrouchButton == 0f && !CanCrouchUp())
-        // {
-        //     state = MovementState.Croutched;
-        //     transform.localScale = new Vector3(transform.localScale.x, crouchYScale, transform.localScale.z);
-        //     _applyCrouchingForce = true;
-        //     _desiredMoveSpeed = crouchSpeed;
-        // }
+        else if (IsGrounded() && CrouchButton == 0f && !CanCrouchUp()) // Crouch if under an object you cannot stand under
+        {
+            state = MovementState.Croutched;
+            transform.localScale = new Vector3(transform.localScale.x, crouchYScale, transform.localScale.z);
+            _applyCrouchingForce = true;
+            _desiredMoveSpeed = crouchSpeed;
+        }
         
-        else if (!IsGrounded() && CrouchButton == 0f)
+        else if (!IsGrounded() && CrouchButton == 0f) // Airborne
         {
             state = MovementState.Airborne;
             transform.localScale = new Vector3(transform.localScale.x, standYScale, transform.localScale.z);
@@ -397,7 +389,7 @@ public class PlayerMovement : MonoBehaviour
     private bool CanCrouchUp()
     {
         RaycastHit hit;
-        if (Physics.SphereCast(transform.position, transform.localScale.x / 2f, Vector3.up, out hit, crouchYScale * 2f))
+        if (Physics.Raycast(transform.position, Vector3.up, out hit, crouchYScale * 2f))
         {
             return false;
         }
