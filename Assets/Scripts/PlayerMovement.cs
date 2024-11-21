@@ -25,6 +25,7 @@ public class PlayerMovement : MonoBehaviour
     
     [Header("Slide Settings")]
     [SerializeField] private float slideSpeed;
+    [SerializeField] private float slideForce;
     [SerializeField] private float minimumSlideSpeed;
     public float MinimumSlideSpeed => slideSpeed;
     public bool sliding;
@@ -166,6 +167,11 @@ public class PlayerMovement : MonoBehaviour
             _rb.AddForce(_moveDirection.normalized * (_desiredMoveSpeed * 10f), ForceMode.Force); // Move the player on the ground
             _rb.drag = groundDrag;
         }
+        else if (state == MovementState.Sliding)
+        {
+            SlidingMovement();
+            _rb.drag = groundDrag;
+        }
         else if (state == MovementState.Croutched)
         {
             _rb.AddForce(_moveDirection.normalized * (_desiredMoveSpeed * 10f), ForceMode.Force); // Move the player while crouching
@@ -248,12 +254,62 @@ public class PlayerMovement : MonoBehaviour
         readyToJump = true;
         _exitSlope = false;
     }
+    
+    private void StartSlide()
+    {
+        transform.localScale = new Vector3(transform.localScale.x, crouchYScale, transform.localScale.z);
+        _rb.AddForce(Vector3.down * 10f, ForceMode.Impulse);
+    }
+    
+    private void SlidingMovement()
+    {
+        _moveDirection = cameraOrientation.forward * MoveVector.y + cameraOrientation.right * MoveVector.x;
+        
+        if (!OnSlope() || _rb.velocity.y > 0.1f)
+        {
+            _rb.AddForce(_moveDirection.normalized * slideForce, ForceMode.Force);
+        }
+        else
+        {
+            _rb.AddForce(GetSlopeMoveDirection(_moveDirection) * slideForce, ForceMode.Force);
+        }
+        
+        if (movementSpeed <= minimumSlideSpeed)
+        {
+            StopSlide();
+        }
+    }
+    
+    private void StopSlide()
+    {
+        if (IsGrounded())
+        {
+            state = MovementState.Grounded;
+        }
+        
+        transform.localScale = new Vector3(transform.localScale.x, standYScale, transform.localScale.z);
+    }
 
+    // Manage the player's state
     private void StateHandler()
     {
-        if (sliding)
+        if (CrouchButton != 0f && _speedValue > minimumSlideSpeed && IsGrounded()) // Slide
         {
-            state = MovementState.Sliding;
+            state = MovementState.Sliding; 
+            _desiredMoveSpeed = slideSpeed;
+            
+            if (!_applyCrouchingForce && IsGrounded())
+            {
+                transform.localScale = new Vector3(transform.localScale.x, crouchYScale, transform.localScale.z);
+                _rb.AddForce(Vector3.down * 20f, ForceMode.Impulse);
+                _applyCrouchingForce = true;
+            }
+            else
+            {
+                transform.localScale = new Vector3(transform.localScale.x, crouchYScale, transform.localScale.z);
+            }
+            
+            StartSlide();
             
             if (OnSlope() && _rb.velocity.y < 0.1f)
             {
@@ -265,15 +321,15 @@ public class PlayerMovement : MonoBehaviour
             }
         }
         
-        else if (CrouchButton != 0f)
+        else if (CrouchButton != 0f && (_speedValue <= crouchSpeed && IsGrounded() || !IsGrounded())) // Crouch
         {
             state = MovementState.Croutched;
+            if (IsGrounded()) _desiredMoveSpeed = crouchSpeed;
             if (!_applyCrouchingForce && IsGrounded())
             {
                 transform.localScale = new Vector3(transform.localScale.x, crouchYScale, transform.localScale.z);
                 _rb.AddForce(Vector3.down * 20f, ForceMode.Impulse);
                 _applyCrouchingForce = true;
-                _desiredMoveSpeed = crouchSpeed;
             }
             else
             {
@@ -281,7 +337,7 @@ public class PlayerMovement : MonoBehaviour
             }
         }
         
-        else if (IsGrounded())
+        else if (IsGrounded() && CrouchButton == 0)
         {
             state = MovementState.Grounded;
             transform.localScale = new Vector3(transform.localScale.x, standYScale, transform.localScale.z);
@@ -305,10 +361,11 @@ public class PlayerMovement : MonoBehaviour
         //     _desiredMoveSpeed = crouchSpeed;
         // }
         
-        else
+        else if (!IsGrounded() && CrouchButton == 0f)
         {
             state = MovementState.Airborne;
             transform.localScale = new Vector3(transform.localScale.x, standYScale, transform.localScale.z);
+            _applyCrouchingForce = false;
             _desiredMoveSpeed = jumpSpeed;
         }
         
