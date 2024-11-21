@@ -315,10 +315,6 @@ public class PlayerMovement : MonoBehaviour
             {
                 _desiredMoveSpeed = slideSpeed;
             }
-            else
-            {
-                _desiredMoveSpeed = walkSpeed;
-            }
         }
         
         else if (CrouchButton != 0f && (_speedValue <= crouchSpeed && IsGrounded() || !IsGrounded())) // Crouch
