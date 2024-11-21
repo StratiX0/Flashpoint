@@ -263,8 +263,18 @@ public class PlayerMovement : MonoBehaviour
     
     private void SlidingMovement()
     {
-        _moveDirection = cameraOrientation.forward * MoveVector.y + cameraOrientation.right * MoveVector.x;
-        
+        Vector3 playerVelocity = _rb.velocity;
+        playerVelocity.y = 0;
+
+        if (playerVelocity.magnitude > 0.1f)
+        {
+            _moveDirection = playerVelocity.normalized;
+        }
+        else
+        {
+            _moveDirection = cameraOrientation.forward * MoveVector.y + cameraOrientation.right * MoveVector.x;
+        }
+
         if (!OnSlope() || _rb.velocity.y > 0.1f)
         {
             _rb.AddForce(_moveDirection.normalized * slideForce, ForceMode.Force);
@@ -273,7 +283,7 @@ public class PlayerMovement : MonoBehaviour
         {
             _rb.AddForce(GetSlopeMoveDirection(_moveDirection) * slideForce, ForceMode.Force);
         }
-        
+
         if (movementSpeed <= minimumSlideSpeed)
         {
             StopSlide();
