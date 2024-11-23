@@ -63,7 +63,7 @@ public class Sliding : MonoBehaviour
         _crouchInput = crouchAction.action.ReadValue<float>();
         _sprintInput = sprintAction.action.ReadValue<float>();
         
-        if (_crouchInput != 0f && _moveInput != Vector3.zero)
+        if (_crouchInput != 0f && pm.grounded && _moveInput != Vector3.zero)
             StartSlide();
 
         if (_crouchInput == 0f && pm.sliding)

@@ -165,6 +165,11 @@ public class PlayerMovement : MonoBehaviour
         // start crouch
         if (_crouchInput != 0f)
         {
+            if (state == MovementState.Air)
+            {
+                crouchForceApplied = true;
+            }
+            
             transform.localScale = new Vector3(transform.localScale.x, crouchYScale, transform.localScale.z);
 
             if (!crouchForceApplied)

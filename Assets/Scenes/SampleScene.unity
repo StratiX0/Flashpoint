@@ -345,10 +345,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 579a1c07fccdfdc41bb342ed0feb6882, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  moveSpeed: 0
   walkSpeed: 7
   sprintSpeed: 15
   speedVelocity: 0
   speedFlatVelocity: 0
+  desiredMoveSpeed: 0
   groundDrag: 5
   speedCurve:
     serializedVersion: 2
@@ -398,7 +400,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  jumpForce: 6
+  jumpForce: 8
   jumpCooldown: 0.25
   airMultiplier: 0.4
   readyToJump: 1
