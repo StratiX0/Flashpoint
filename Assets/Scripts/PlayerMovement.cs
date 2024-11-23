@@ -1,388 +1,377 @@
+using System;
 using System.Collections;
-using TMPro;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 
 public class PlayerMovement : MonoBehaviour
 {
-    private static PlayerMovement Instance { get; set; }
+    [FormerlySerializedAs("_moveSpeed")] [Header("Movement")]
+    public float moveSpeed;
+    public float walkSpeed;
+    public float sprintSpeed;
+    public float speedVelocity;
+    public float speedFlatVelocity;
+    
+    public float desiredMoveSpeed;
+    private float _lastDesiredMoveSpeed;
+    
+    public float groundDrag;
 
+    [Header("Curves")]
+    public AnimationCurve speedCurve;
+    public AnimationCurve slideCurve;
+    
+    [Header("Jumping")]
+    public float jumpForce;
+    public float jumpCooldown;
+    public float airMultiplier;
+    public bool readyToJump;
+
+    [Header("Crouching")]
+    public float crouchSpeed;
+    public float crouchYScale;
+    public float standYScale;
+    public bool crouchForceApplied;
+
+    [Header("Sliding")]
+    public float slideSpeed;
+    public bool sliding;
+    private bool _slideOccured;
+    private float _updatedSlideSpeed;
+    
     [Header("Input Actions")]
     [SerializeField] private InputActionReference moveAction;
     [SerializeField] private InputActionReference jumpAction;
     [SerializeField] private InputActionReference crouchAction;
-    [SerializeField] private InputActionReference lookAction;
+    [SerializeField] private InputActionReference sprintAction;
     
-    [Header("Walk Settings")]
-    [SerializeField] private float walkSpeed;
-    [SerializeField] private float movementSpeed;
-    
-    [Header("Sprint Settings")]
-    [SerializeField] private float sprintSpeed;
-    public float MovementSpeed => movementSpeed;
-    [SerializeField] private float groundDrag;
-    private Vector3 _moveDirection;
-    
-    [Header("Slide Settings")]
-    [SerializeField] private float slideSpeed;
-    [SerializeField] private float slideForce;
-    [SerializeField] private float minimumSlideSpeed;
-    public float MinimumSlideSpeed => slideSpeed;
-    public bool sliding;
-    private float _desiredMoveSpeed;
-    private float _lastDesireMoveSpeed;
-    public float speedIncreaseMultiplier;
-    public float slopeIncreaseMultiplier;
-    
-    [Header("Crouch Settings")]
-    [SerializeField] private float crouchSpeed;
-    private bool _applyCrouchingForce;
-    [SerializeField] private float crouchYScale;
-    [SerializeField] private float standYScale;
-    
+    private Vector3 _moveInput;
+    private float _jumpInput;
+    private float _crouchInput;
+    private float _sprintInput;
+        
+    [Header("Ground Check")]
+    public float playerHeight;
+    public bool grounded;
+
     [Header("Slope Handling")]
     public float maxSlopeAngle;
     private RaycastHit _slopeHit;
-    private bool _exitSlope;
-    
-    [Header("Jump Settings")]
-    [SerializeField] private float jumpForce;
-    [SerializeField] private float jumpSpeed;
-    [SerializeField] private bool readyToJump;
-    [SerializeField] private float airMultiplier;
-    [SerializeField] private float jumpCooldown;
-    
-    [Header("Physics Settings")]
-    [SerializeField] private float gravityScale;
-    private bool _isGrounded;
-    private float _speedValue;
-    
-    [Header("Mouse Settings")]
-    [SerializeField] private float sensitivity;
-    private float _cameraPitch;
-    
-    [Header("User Interface")]
-    [SerializeField] private TextMeshProUGUI speedTextUi;
+    private bool _exitingSlope;
 
-    private Vector2 MoveVector { get; set; }
-    private float JumpButton { get; set; }
-    private float CrouchButton { get; set; }
-    private Vector2 MouseDirection { get; set; }
-    
+    public float speedIncreaseMultiplier;
+    public float slopeIncreaseMultiplier;
+
+    public Transform orientation;
+
+    public Vector3 moveDirection;
+
     private Rigidbody _rb;
-    
-    [Header("Camera Settings")]
-    [SerializeField] private Camera playerCamera;
-    public Transform cameraOrientation;
-    
-    [Header("States")]
+
     public MovementState state;
     public enum MovementState
     {
-        Grounded,
-        Croutched,
+        Walking,
         Sprinting,
+        Crouching,
         Sliding,
-        Airborne
+        Air
     }
-    
-    
+
     private void Awake()
     {
-        Instance = this;
         moveAction.action.Enable();
         jumpAction.action.Enable();
         crouchAction.action.Enable();
-        lookAction.action.Enable();
+        sprintAction.action.Enable();
     }
-
+    
     private void OnEnable()
     {
         moveAction.action.Enable();
         jumpAction.action.Enable();
         crouchAction.action.Enable();
-        lookAction.action.Enable();
+        sprintAction.action.Enable();
     }
-
+    
     private void OnDisable()
     {
         moveAction.action.Disable();
         jumpAction.action.Disable();
         crouchAction.action.Disable();
-        lookAction.action.Disable();
+        sprintAction.action.Disable();
     }
 
     private void Start()
     {
         _rb = GetComponent<Rigidbody>();
-        Cursor.lockState = CursorLockMode.Locked;
-        
+        _rb.freezeRotation = true;
+
         readyToJump = true;
-        
+
         standYScale = transform.localScale.y;
     }
 
     private void Update()
     {
-        GetInput();
-        Look();
-        StateHandler();
+        if (Physics.Raycast(transform.position, Vector3.down, 1.1f))
+        {
+            grounded = true;
+        }
+        else
+        {
+            grounded = false;
+        }
+
+        MyInput();
         SpeedControl();
+        StateHandler();
+
+        // handle drag
+        if (grounded)
+            _rb.drag = groundDrag;
+        else
+            _rb.drag = 0;
     }
 
     private void FixedUpdate()
     {
-        _speedValue = Vector3.Magnitude(_rb.velocity);
-        speedTextUi.text = _speedValue.ToString("F0");
-        Movement();
-        Jump();
-        _rb.AddForce(Vector3.down * gravityScale, ForceMode.Force);
+        Vector3 vel = _rb.velocity;
+        speedVelocity = vel.magnitude;
+        vel.y = 0;
+        speedFlatVelocity = vel.magnitude;
+        MovePlayer();
     }
 
-    private void GetInput()
+    private void MyInput()
     {
-        MoveVector = moveAction.action.ReadValue<Vector2>();
-        JumpButton = jumpAction.action.ReadValue<float>();
-        CrouchButton = crouchAction.action.ReadValue<float>();
-        MouseDirection = lookAction.action.ReadValue<Vector2>();
-    }
-
-    // Move the player
-    private void Movement()
-    {
-        _moveDirection = cameraOrientation.forward * MoveVector.y + cameraOrientation.right * MoveVector.x;
+        _moveInput = moveAction.action.ReadValue<Vector2>();
+        _jumpInput = jumpAction.action.ReadValue<float>();
+        _crouchInput = crouchAction.action.ReadValue<float>();
+        _sprintInput = sprintAction.action.ReadValue<float>();
         
-        if (OnSlope() && !_exitSlope)
-        {
-            _rb.AddForce(GetSlopeMoveDirection(_moveDirection) * (_desiredMoveSpeed * 20f), ForceMode.Force);
-
-            if (_rb.velocity.y > 0)
-            {
-                _rb.AddForce(Vector3.down * 80f, ForceMode.Force);
-            }
-        }
-        
-        else if (state == MovementState.Grounded)
-        {
-            _rb.AddForce(_moveDirection.normalized * (_desiredMoveSpeed * 10f), ForceMode.Force); // Move the player on the ground
-            _rb.drag = groundDrag;
-        }
-        else if (state == MovementState.Sliding)
-        {
-            SlidingMovement();
-            _rb.drag = groundDrag;
-        }
-        else if (state == MovementState.Croutched)
-        {
-            _rb.AddForce(_moveDirection.normalized * (_desiredMoveSpeed * 10f), ForceMode.Force); // Move the player while crouching
-            _rb.drag = groundDrag;
-        }
-        else
-        {
-            _rb.AddForce(_moveDirection.normalized * (_desiredMoveSpeed * _speedValue), ForceMode.Force); // Move the player in the air
-            _rb.drag = 1;
-        }
-        
-        _rb.useGravity = !OnSlope();
-    }
-    
-    private IEnumerator SmoothlyLerpMoveSpeed()
-    {
-        // smoothly lerp movementSpeed to desired value
-        float time = 0;
-        float difference = Mathf.Abs(_desiredMoveSpeed - movementSpeed);
-        float startValue = movementSpeed;
-
-        while (time < difference)
-        {
-            movementSpeed = Mathf.Lerp(startValue, _desiredMoveSpeed, time / difference);
-
-            if (OnSlope())
-            {
-                float slopeAngle = Vector3.Angle(Vector3.up, _slopeHit.normal);
-                float slopeAngleIncrease = 1 + (slopeAngle / 90f);
-
-                time += Time.deltaTime * speedIncreaseMultiplier * slopeIncreaseMultiplier * slopeAngleIncrease;
-            }
-            else
-                time += Time.deltaTime * speedIncreaseMultiplier;
-
-            yield return null;
-        }
-
-        movementSpeed = _desiredMoveSpeed;
-    }
-
-    // Limit the player's speed
-    private void SpeedControl()
-    {
-        if (OnSlope() && !_exitSlope)
-        {
-            if (_rb.velocity.magnitude > _desiredMoveSpeed)
-            {
-                _rb.velocity = _rb.velocity.normalized * _desiredMoveSpeed;
-            }
-        }
-        else
-        {
-            Vector3 flatVel = new Vector3(_rb.velocity.x, 0, _rb.velocity.z); // Get the velocity on the x and z axis
-        
-            if (flatVel.magnitude > _desiredMoveSpeed)
-            {
-                Vector3 limitedVel = flatVel.normalized * _desiredMoveSpeed;
-                _rb.velocity = new Vector3(limitedVel.x, _rb.velocity.y, limitedVel.z);
-            }
-        }
-    }
-
-    // Make the player jump
-    private void Jump()
-    {
-        _exitSlope = true;
-        
-        if (JumpButton != 0 && IsGrounded() && readyToJump)
+        // when to jump
+        if(_jumpInput != 0f && readyToJump && grounded)
         {
             readyToJump = false;
-            _rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse); // Jump
+
+            Jump();
+
             Invoke(nameof(ResetJump), jumpCooldown);
-        } 
-    }
-    
-    // Reset the jump
-    private void ResetJump()
-    {
-        readyToJump = true;
-        _exitSlope = false;
-    }
-    
-    private void StartSlide()
-    {
-        transform.localScale = new Vector3(transform.localScale.x, crouchYScale, transform.localScale.z);
-        _rb.AddForce(Vector3.down * 10f, ForceMode.Impulse);
-    }
-    
-    private void SlidingMovement()
-    {
-        Vector3 playerVelocity = _rb.velocity;
-        playerVelocity.y = 0;
-
-        if (playerVelocity.magnitude > 0.1f)
-        {
-            _moveDirection = playerVelocity.normalized;
-        }
-        else
-        {
-            _moveDirection = cameraOrientation.forward * MoveVector.y + cameraOrientation.right * MoveVector.x;
         }
 
-        if (!OnSlope() || _rb.velocity.y > 0.1f)
+        // start crouch
+        if (_crouchInput != 0f)
         {
-            _rb.AddForce(_moveDirection.normalized * slideForce, ForceMode.Force);
-        }
-        else
-        {
-            _rb.AddForce(GetSlopeMoveDirection(_moveDirection) * slideForce, ForceMode.Force);
+            transform.localScale = new Vector3(transform.localScale.x, crouchYScale, transform.localScale.z);
+
+            if (!crouchForceApplied)
+            {
+                _rb.AddForce(Vector3.down * 5f, ForceMode.Impulse);
+                crouchForceApplied = true;
+            }
+            
+            if (!_slideOccured)
+            {
+                _updatedSlideSpeed = slideSpeed;    
+                _slideOccured = true;
+            }
         }
 
-        if (movementSpeed <= minimumSlideSpeed)
+        // stop crouch
+        if (_crouchInput == 0f)
         {
-            StopSlide();
+            transform.localScale = new Vector3(transform.localScale.x, standYScale, transform.localScale.z);
+            crouchForceApplied = false;
+            _slideOccured = false;
         }
-    }
-    
-    private void StopSlide()
-    {
-        if (IsGrounded())
-        {
-            state = MovementState.Grounded;
-        }
-        
-        transform.localScale = new Vector3(transform.localScale.x, standYScale, transform.localScale.z);
     }
 
-    // Manage the player's state
     private void StateHandler()
     {
-        if (CrouchButton != 0f && _speedValue > minimumSlideSpeed && IsGrounded()) // Slide
+        // Mode - Sliding
+        if (sliding)
         {
-            state = MovementState.Sliding; 
-            _desiredMoveSpeed = slideSpeed;
-            
-            if (!_applyCrouchingForce && IsGrounded())
-            {
-                transform.localScale = new Vector3(transform.localScale.x, crouchYScale, transform.localScale.z);
-                _rb.AddForce(Vector3.down * 20f, ForceMode.Impulse);
-                _applyCrouchingForce = true;
-            }
-            else
-            {
-                transform.localScale = new Vector3(transform.localScale.x, crouchYScale, transform.localScale.z);
-            }
-            
-            StartSlide();
+            state = MovementState.Sliding;
             
             if (OnSlope() && _rb.velocity.y < 0.1f)
             {
-                _desiredMoveSpeed = slideSpeed;
-            }
-        }
-        
-        else if (CrouchButton != 0f && (_speedValue <= crouchSpeed && IsGrounded() || !IsGrounded())) // Crouch
-        {
-            state = MovementState.Croutched;
-            if (IsGrounded()) _desiredMoveSpeed = crouchSpeed;
-            if (!_applyCrouchingForce && IsGrounded())
-            {
-                transform.localScale = new Vector3(transform.localScale.x, crouchYScale, transform.localScale.z);
-                _rb.AddForce(Vector3.down * 20f, ForceMode.Impulse);
-                _applyCrouchingForce = true;
+                desiredMoveSpeed = slideSpeed;
             }
             else
             {
-                transform.localScale = new Vector3(transform.localScale.x, crouchYScale, transform.localScale.z);
+                desiredMoveSpeed = _updatedSlideSpeed;
             }
         }
         
-        else if (IsGrounded() && CrouchButton == 0f && CanCrouchUp()) // Stand
+        // Mode - Crouching
+        else if (_crouchInput != 0f && !sliding)
         {
-            state = MovementState.Grounded;
-            transform.localScale = new Vector3(transform.localScale.x, standYScale, transform.localScale.z);
-            _applyCrouchingForce = false;
-            _desiredMoveSpeed = walkSpeed;
+            if (state != MovementState.Air) desiredMoveSpeed = crouchSpeed;
+            state = MovementState.Crouching;
+        }
+
+        // Mode - Sprinting
+        else if(grounded && _sprintInput > 0f)
+        {
+            state = MovementState.Sprinting;
+            moveSpeed = sprintSpeed;
+            desiredMoveSpeed = sprintSpeed;
+        }
+
+        // Mode - Walking
+        else if (grounded)
+        {
+            state = MovementState.Walking;
+            desiredMoveSpeed = walkSpeed;
+        }
+
+        // Mode - Air
+        else
+        {
+            state = MovementState.Air;
         }
         
-        else if (IsGrounded() && CrouchButton == 0f && !CanCrouchUp()) // Crouch if under an object you cannot stand under
-        {
-            state = MovementState.Croutched;
-            transform.localScale = new Vector3(transform.localScale.x, crouchYScale, transform.localScale.z);
-            _applyCrouchingForce = true;
-            _desiredMoveSpeed = crouchSpeed;
-        }
-        
-        else if (!IsGrounded() && CrouchButton == 0f) // Airborne
-        {
-            state = MovementState.Airborne;
-            transform.localScale = new Vector3(transform.localScale.x, standYScale, transform.localScale.z);
-            _applyCrouchingForce = false;
-            _desiredMoveSpeed = jumpSpeed;
-        }
-        
-        if (Mathf.Abs(_desiredMoveSpeed - _lastDesireMoveSpeed) > 4f && movementSpeed != 0f)
+        // check if desiredMoveSpeed has changed drastically
+        if (Mathf.Abs(desiredMoveSpeed - _lastDesiredMoveSpeed) > 4f && moveSpeed != 0)
         {
             StopAllCoroutines();
             StartCoroutine(SmoothlyLerpMoveSpeed());
         }
         else
         {
-            movementSpeed = _desiredMoveSpeed;
+            moveSpeed = desiredMoveSpeed;
         }
         
-        _lastDesireMoveSpeed = _desiredMoveSpeed;
+        _lastDesiredMoveSpeed = desiredMoveSpeed;
     }
-    
+
+    private IEnumerator SmoothlyLerpMoveSpeed()
+    {
+        float time = 0f;
+        float duration = speedCurve.keys[speedCurve.length - 1].time;
+        float startValue = moveSpeed;
+
+        while (time < duration)
+        {
+            float t = time / duration;
+            if (sliding)
+            {
+                desiredMoveSpeed = Mathf.Lerp(crouchSpeed, desiredMoveSpeed, slideCurve.Evaluate(t));
+
+                moveSpeed = desiredMoveSpeed;
+                
+                if (moveSpeed <= crouchSpeed)
+                {
+                    _updatedSlideSpeed = crouchSpeed;
+                    _slideOccured = true;
+                    sliding = false;
+                    state = MovementState.Crouching;
+                    break;
+                }
+            }
+            else
+            {
+                moveSpeed = Mathf.Lerp(startValue, desiredMoveSpeed, speedCurve.Evaluate(t));
+            }
+
+            if (OnSlope())
+            {
+                float slopeAngle = Vector3.Angle(Vector3.up, _slopeHit.normal);
+                float slopeAngleIncrease = 1 + (slopeAngle / 90f);
+                time += Time.deltaTime * speedIncreaseMultiplier * slopeIncreaseMultiplier * slopeAngleIncrease;
+            }
+            else if (sliding)
+            {
+                time += Time.deltaTime * 0.5f;
+            }
+            else
+            {
+                time += Time.deltaTime * speedIncreaseMultiplier;
+            }
+
+            yield return null;
+        }
+
+        moveSpeed = desiredMoveSpeed;
+    }
+
+    private void MovePlayer()
+    {
+        // calculate movement direction
+        moveDirection = orientation.forward * _moveInput.y + orientation.right * _moveInput.x;
+
+        // on slope
+        if (OnSlope() && !_exitingSlope)
+        {
+            _rb.AddForce(GetSlopeMoveDirection(moveDirection) * (moveSpeed * 20f), ForceMode.Force);
+
+            if (_rb.velocity.y > 0)
+                _rb.AddForce(Vector3.down * 80f, ForceMode.Force);
+        }
+
+        // on ground
+        else if (grounded)
+        {
+            _rb.AddForce(moveDirection.normalized * (moveSpeed * 10f), ForceMode.Force);
+        }
+
+        // in air
+        else if (!grounded)
+        {
+            _rb.AddForce(moveDirection.normalized * (moveSpeed * 10f * airMultiplier), ForceMode.Force);
+        }
+
+        // turn gravity off while on slope
+        _rb.useGravity = !OnSlope();
+        
+        orientation.localPosition = transform.localPosition;
+    }
+
+    private void SpeedControl()
+    {
+        // limiting speed on slope
+        if (OnSlope() && !_exitingSlope)
+        {
+            if (_rb.velocity.magnitude > moveSpeed)
+                _rb.velocity = _rb.velocity.normalized * moveSpeed;
+        }
+
+        // limiting speed on ground or in air
+        else
+        {
+            Vector3 flatVel = new Vector3(_rb.velocity.x, 0f, _rb.velocity.z);
+
+            // limit velocity if needed
+            if (flatVel.magnitude > moveSpeed)
+            {
+                Vector3 limitedVel = flatVel.normalized * moveSpeed;
+                _rb.velocity = new Vector3(limitedVel.x, _rb.velocity.y, limitedVel.z);
+            }
+        }
+    }
+
+    private void Jump()
+    {
+        _exitingSlope = true;
+
+        // reset y velocity
+        _rb.velocity = new Vector3(_rb.velocity.x, 0f, _rb.velocity.z);
+
+        _rb.AddForce(transform.up * jumpForce, ForceMode.Impulse);
+    }
+    private void ResetJump()
+    {
+        readyToJump = true;
+
+        _exitingSlope = false;
+    }
+
     public bool OnSlope()
     {
-        if (Physics.Raycast(transform.position, Vector3.down, out _slopeHit, transform.localScale.y * 0.5f + 0.3f))
+        if(Physics.Raycast(transform.position, Vector3.down, out _slopeHit, playerHeight * 0.5f + 0.3f))
         {
             float angle = Vector3.Angle(Vector3.up, _slopeHit.normal);
             return angle < maxSlopeAngle && angle != 0;
@@ -395,45 +384,4 @@ public class PlayerMovement : MonoBehaviour
     {
         return Vector3.ProjectOnPlane(direction, _slopeHit.normal).normalized;
     }
-
-    private bool CanCrouchUp()
-    {
-        RaycastHit hit;
-        if (Physics.Raycast(transform.position, Vector3.up, out hit, crouchYScale * 2f))
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    // Look around
-    private void Look()
-    {
-        float mouseX = MouseDirection.x * sensitivity;
-        float mouseY = MouseDirection.y * sensitivity;
-
-        transform.Rotate(Vector3.up, mouseX * Time.deltaTime); // Rotate the player on the yaw axis
-
-        _cameraPitch -= mouseY * Time.deltaTime;
-        _cameraPitch = Mathf.Clamp(_cameraPitch, -90f, 90f);
-        playerCamera.transform.localRotation = Quaternion.Euler(_cameraPitch, 0f, 0f); // Rotate the camera on the pitch axis
-    }
-
-    // Check if the player is grounded
-    public bool IsGrounded()
-    {
-        if (Physics.Raycast(transform.position, Vector3.down, 1.1f))
-        {
-            _isGrounded = true;
-        }
-        else
-        {
-            _isGrounded = false;
-        }
-        
-        return _isGrounded;
-    }
-
-
 }
