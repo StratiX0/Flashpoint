@@ -26,6 +26,7 @@ public class Shoot : MonoBehaviour
     [SerializeField] private float muzzleLightTime;
     [SerializeField] private GameObject impactEffect;
     [SerializeField] private GameObject impactEffectFolder;
+    [SerializeField] private GameObject laserBeam;
     
     private void Awake()
     {
@@ -72,6 +73,11 @@ public class Shoot : MonoBehaviour
         {
             ShootFireTwo();
         }
+        
+        if (_fireTwoState == 0f) // If the player is shooting with the secondary shoot method
+        {
+            laserBeam.SetActive(false);
+        }
     }
     
     // Shoots a single bullet on click
@@ -108,6 +114,8 @@ public class Shoot : MonoBehaviour
     // Shoots a continuous beam
     private void ShootFireTwo()
     {
+        laserBeam.SetActive(true);
+        
         RaycastHit hit;
         if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out hit)) // Shoots a raycast from the camera
         {
