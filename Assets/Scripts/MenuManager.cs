@@ -9,6 +9,7 @@ public class MenuManager : MonoBehaviour
     [SerializeField] private InputActionReference menuAction;
 
     [SerializeField] private GameObject menu;
+    [SerializeField] private GameObject hud;
     
     [SerializeField] private GameObject player;
 
@@ -46,6 +47,7 @@ public class MenuManager : MonoBehaviour
     {
         isPaused = true;
         menu.SetActive(true);
+        hud.SetActive(false);
     
         // Bloquer les entrées
         DisablePlayerControls();
