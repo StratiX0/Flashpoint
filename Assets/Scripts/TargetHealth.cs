@@ -7,7 +7,8 @@ public class TargetHealth : MonoBehaviour
     public TargetHealth Instance { get; set; }
     
     [Header("Health Settings")]
-    [SerializeField] private float health;
+    public float defaultHealth;
+    private float _health;
 
     [Header("Target Settings")]
     public Type targetType;
@@ -49,15 +50,17 @@ public class TargetHealth : MonoBehaviour
         }
         
         SetMaterial(defaultMat);
+        
+        _health = defaultHealth;
     }
     
     // Reduces health to give damage
     public void TakeDamage(float damage)
     {
-        health -= damage;
-        if (health <= 0f)
+        _health -= damage;
+        if (_health <= 0f)
         {
-            health = 0f;
+            _health = 0f;
             SetMaterial(destroyedMat);
         }
     }
@@ -68,19 +71,19 @@ public class TargetHealth : MonoBehaviour
         if (value >= 0f) SetMaterial(defaultMat);
 
         if (value <= 0f) value = 0f;
-        health = value;
+        _health = value;
     }
     
     // Returns the current health value
     public float GetHealth()
     {
-        return health;
+        return _health;
     }
     
     // Increases health by a specific amount
     public void Heal(float healAmount)
     {
-        health += healAmount;
+        _health += healAmount;
     }
 
     // Sets the material of the object

@@ -81,11 +81,15 @@ public class Shoot : MonoBehaviour
         muzzleFlash.Play();
         muzzleLight.SetActive(true);
         
+        Invoke(nameof(ResetMuzzleLight), muzzleLightTime); // Resets the muzzle light after a certain amount of time
+        
         RaycastHit hit;
         if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out hit)) // Shoots a raycast from the camera
         {
+            if (hit.transform.GetComponent<TargetHealth>() == null) return;
             TargetHealth targetHealth = hit.transform.GetComponent<TargetHealth>();
             TargetHealth.Type type = targetHealth.targetType;
+
             if (targetHealth != null && (type == TargetHealth.Type.Tap || type == TargetHealth.Type.Dual))
             {
                 targetHealth.TakeDamage(primaryDamage); // Deals damage to the target
@@ -95,8 +99,6 @@ public class Shoot : MonoBehaviour
             
             Instantiate(impactEffect, hit.point, Quaternion.LookRotation(hit.normal), impactEffectFolder.transform); // Creates an impact effect on what has been hit
         }
-        
-        Invoke(nameof(ResetMuzzleLight), muzzleLightTime); // Resets the muzzle light after a certain amount of time
     }
     
     // Resets the muzzle light
@@ -111,6 +113,7 @@ public class Shoot : MonoBehaviour
         RaycastHit hit;
         if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out hit)) // Shoots a raycast from the camera
         {
+            if (hit.transform.GetComponent<TargetHealth>() == null) return;
             TargetHealth targetHealth = hit.transform.GetComponent<TargetHealth>();
             TargetHealth.Type type = targetHealth.targetType;
             if (targetHealth != null && (type == TargetHealth.Type.Laser || type == TargetHealth.Type.Dual))
