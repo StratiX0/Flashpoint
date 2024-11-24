@@ -121,6 +121,15 @@ public class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
+        if (MenuManager.Instance.isPaused)
+        {
+            _rb.Sleep();
+        }
+        else
+        {
+            _rb.WakeUp();
+        }
+        
         if (Physics.Raycast(transform.position, Vector3.down, 1.1f))
         {
             grounded = true;
@@ -143,6 +152,15 @@ public class PlayerMovement : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (MenuManager.Instance.isPaused)
+        {
+            _rb.Sleep();
+        }
+        else
+        {
+            _rb.WakeUp();
+        }
+        
         Vector3 vel = _rb.velocity;
         speedVelocity = vel.magnitude;
         vel.y = 0;

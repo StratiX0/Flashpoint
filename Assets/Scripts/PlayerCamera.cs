@@ -48,6 +48,8 @@ public class PlayerCamera : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (MenuManager.Instance.isPaused) return;
+        
         _lookVector = lookAction.action.ReadValue<Vector2>() * (Time.deltaTime * sensitivity);
         
         _yRotation += _lookVector.x;

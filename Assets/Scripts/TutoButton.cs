@@ -22,6 +22,7 @@ public class TutoButton : MonoBehaviour
 
     void Update()
     {
+        if (MenuManager.Instance.isPaused) return;
         if (resetAction.action.triggered)
         {
             ResetTargetsHealth();
