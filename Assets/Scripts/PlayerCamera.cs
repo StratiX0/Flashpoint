@@ -1,16 +1,18 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using LitMotion;
+using UnityEngine.Rendering.VirtualTexturing;
 
 public class PlayerCamera : MonoBehaviour
 {
     
     [SerializeField] private InputActionReference lookAction;
+    private Camera _camera;
     
     public Transform cameraPosition;
+    public Transform cameraHolder;
     public Transform orientation;
+    public int baseFov;
     public float sensitivity;
     
     private Vector2 _lookVector;
@@ -36,6 +38,8 @@ public class PlayerCamera : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        _camera = GetComponent<Camera>();
+        _camera.fieldOfView = baseFov;
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }
@@ -55,5 +59,15 @@ public class PlayerCamera : MonoBehaviour
         orientation.localRotation = Quaternion.Euler(0f, _yRotation, 0f);
         
         transform.localPosition = cameraPosition.position;
+    }
+    
+    public void DoFov(float fovTarget)
+    {
+        LMotion.Create(_camera.fieldOfView, fovTarget, 0.25f).WithEase(Ease.InSine).Bind(x => _camera.fieldOfView = x);
+    }
+    
+    public void DoTilt(float tiltTarget)
+    {
+        LMotion.Create(transform.localRotation.z, tiltTarget, 0.25f).WithEase(Ease.OutQuint).Bind(x => transform.localRotation = new Quaternion(transform.localRotation.x, transform.localRotation.y, x, transform.localRotation.w));
     }
 }
