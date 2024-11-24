@@ -428,6 +428,7 @@ MonoBehaviour:
   speedIncreaseMultiplier: 1.5
   slopeIncreaseMultiplier: 2.5
   orientation: {fileID: 681777023}
+  playerCam: {fileID: 330585548}
   moveDirection: {x: 0, y: 0, z: 0}
   state: 0
 --- !u!114 &84850675
@@ -469,6 +470,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   orientation: {fileID: 681777023}
   playerObj: {fileID: 84850672}
+  playerCam: {fileID: 330585548}
   maxSlideTime: 2
   slideForce: 1000
   slideYScale: 0.5
@@ -516,6 +518,7 @@ MonoBehaviour:
   gravityCounterForce: 10
   orientation: {fileID: 681777023}
   playerCam: {fileID: 330585548}
+  playerCamTransform: {fileID: 330585546}
 --- !u!1 &97254104
 GameObject:
   m_ObjectHideFlags: 0

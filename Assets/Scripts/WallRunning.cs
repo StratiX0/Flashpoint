@@ -47,7 +47,8 @@ public class WallRunning : MonoBehaviour
     private PlayerMovement pm;
     private Rigidbody rb;
     public PlayerCamera playerCam;
-
+    public Transform playerCamTransform;
+    
     private void Awake()
     {
         moveAction.action.Enable();
@@ -91,8 +92,18 @@ public class WallRunning : MonoBehaviour
 
     private void CheckForWall() 
     {
-        wallRight = Physics.Raycast(transform.position, orientation.right, out rightWallhit, wallCheckDistance, whatIsWall);
-        wallLeft = Physics.Raycast(transform.position, -orientation.right, out leftWallhit, wallCheckDistance, whatIsWall);
+        Vector3 wallNormal = wallRight ? rightWallhit.normal : leftWallhit.normal;
+        Vector3 wallForward = Vector3.Cross(wallNormal, transform.up);
+
+        if ((playerCamTransform.forward - wallForward).magnitude > (playerCamTransform.forward - -wallForward).magnitude)
+            wallForward = -wallForward;
+
+        float tiltAngle = Vector3.SignedAngle(playerCamTransform.forward, wallForward, Vector3.up);
+        
+        Debug.DrawRay(transform.position, playerCamTransform.transform.right, Color.red);
+        
+        wallRight = Physics.Raycast(transform.position, playerCamTransform.transform.right, out rightWallhit, wallCheckDistance, whatIsWall);
+        wallLeft = Physics.Raycast(transform.position, -playerCamTransform.transform.right, out leftWallhit, wallCheckDistance, whatIsWall);
     }
 
     private bool AboveGround()
@@ -157,9 +168,17 @@ public class WallRunning : MonoBehaviour
         rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
 
         // apply camera effects
-        playerCam.DoFov(playerCam.baseFov * 1.1f);
-        if (wallLeft) playerCam.DoTilt(-5f);
-        if (wallRight) playerCam.DoTilt(5f);
+        playerCam.DoWallRunFov(playerCam.baseFov * 1.1f);
+        
+        Debug.Log("wall right : " + wallRight);
+        Debug.Log("wall left : " + wallLeft);
+        
+        if (wallRight)
+            playerCam.DoWallRunTilt(5f);
+        else if (wallLeft)
+            playerCam.DoWallRunTilt(-5f);
+        
+        // playerCam.DoWallRunTilt(5f);
     }
     
     private void WallRunningMovement()
@@ -200,12 +219,8 @@ public class WallRunning : MonoBehaviour
         pm.wallRunning = false;
         rb.useGravity = true; // Re-enable gravity when wall running stops
         
-        playerCam.DoFov(playerCam.baseFov);
-        playerCam.DoTilt(0f);
-        
-        playerCam.DoFov(playerCam.baseFov);
-        if (wallLeft) playerCam.DoTilt(0f);
-        if (wallRight) playerCam.DoTilt(0f);
+        playerCam.DoWallRunFov(playerCam.baseFov);
+        playerCam.DoWallRunTilt(0f);
     }
     
     private void WallJump()

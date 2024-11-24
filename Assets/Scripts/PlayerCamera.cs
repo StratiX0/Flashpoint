@@ -19,6 +19,7 @@ public class PlayerCamera : MonoBehaviour
     
     private float _xRotation;
     private float _yRotation;
+    private float _zRotation;
 
     private void Awake()
     {
@@ -55,19 +56,25 @@ public class PlayerCamera : MonoBehaviour
         
         _xRotation = Mathf.Clamp(_xRotation, -90f, 90f);
         
-        transform.localRotation = Quaternion.Euler(_xRotation, _yRotation, 0f);
+        transform.localRotation = Quaternion.Euler(_xRotation, _yRotation, _zRotation);
         orientation.localRotation = Quaternion.Euler(0f, _yRotation, 0f);
         
-        transform.localPosition = cameraPosition.position;
+        cameraHolder.position = cameraPosition.position;
+        transform.position = cameraPosition.position;
     }
     
-    public void DoFov(float fovTarget)
+    public void DoSprintSlideFov(float fovTarget)
+    {
+        LMotion.Create(_camera.fieldOfView, fovTarget, 0.1f).WithEase(Ease.InSine).Bind(x => _camera.fieldOfView = x);
+    }
+    
+    public void DoWallRunFov(float fovTarget)
     {
         LMotion.Create(_camera.fieldOfView, fovTarget, 0.25f).WithEase(Ease.InSine).Bind(x => _camera.fieldOfView = x);
     }
     
-    public void DoTilt(float tiltTarget)
+    public void DoWallRunTilt(float tiltTarget)
     {
-        LMotion.Create(transform.localRotation.z, tiltTarget, 0.25f).WithEase(Ease.OutQuint).Bind(x => transform.localRotation = new Quaternion(transform.localRotation.x, transform.localRotation.y, x, transform.localRotation.w));
+        LMotion.Create(_zRotation, tiltTarget, 0.25f).WithEase(Ease.InSine).Bind(x => _zRotation = x);
     }
 }

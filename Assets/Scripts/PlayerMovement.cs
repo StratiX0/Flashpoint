@@ -20,6 +20,7 @@ public class PlayerMovement : MonoBehaviour
     public bool wallRunning;
     public float desiredMoveSpeed;
     private float _lastDesiredMoveSpeed;
+    private bool _applySprintAnimation;
     
     public float groundDrag;
 
@@ -67,10 +68,11 @@ public class PlayerMovement : MonoBehaviour
     public float slopeIncreaseMultiplier;
 
     public Transform orientation;
+    [SerializeField] private PlayerCamera playerCam;
+    private Rigidbody _rb;
 
     public Vector3 moveDirection;
 
-    private Rigidbody _rb;
 
     public MovementState state;
     public enum MovementState
@@ -164,6 +166,12 @@ public class PlayerMovement : MonoBehaviour
 
             Invoke(nameof(ResetJump), jumpCooldown);
         }
+        
+        if (_sprintInput == 0f && state == MovementState.Sprinting)
+        {
+            playerCam.DoSprintSlideFov(playerCam.baseFov);
+            _applySprintAnimation = true;
+        }
 
         // start crouch
         if (_crouchInput != 0f)
@@ -233,6 +241,12 @@ public class PlayerMovement : MonoBehaviour
             state = MovementState.Sprinting;
             moveSpeed = sprintSpeed;
             desiredMoveSpeed = sprintSpeed;
+            
+            if (_applySprintAnimation)
+            {
+                playerCam.DoSprintSlideFov(playerCam.baseFov * 1.025f);
+                _applySprintAnimation = false;
+            }
         }
 
         // Mode - Walking
@@ -343,7 +357,7 @@ public class PlayerMovement : MonoBehaviour
         // turn gravity off while on slope
         _rb.useGravity = !OnSlope();
         
-        orientation.localPosition = transform.localPosition;
+        orientation.position = transform.localPosition;
     }
 
     private void SpeedControl()

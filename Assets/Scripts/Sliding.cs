@@ -10,6 +10,7 @@ public class Sliding : MonoBehaviour
     public Transform playerObj;
     private Rigidbody rb;
     private PlayerMovement pm;
+    [SerializeField] private PlayerCamera playerCam;
 
     [Header("Sliding")]
     public float maxSlideTime;
@@ -82,6 +83,8 @@ public class Sliding : MonoBehaviour
 
         playerObj.localScale = new Vector3(playerObj.localScale.x, slideYScale, playerObj.localScale.z);
         rb.AddForce(Vector3.down * 5f, ForceMode.Impulse);
+        
+        playerCam.DoSprintSlideFov(playerCam.baseFov * 1.025f);
 
         slideTimer = maxSlideTime;
     }
@@ -113,5 +116,7 @@ public class Sliding : MonoBehaviour
         pm.sliding = false;
 
         playerObj.localScale = new Vector3(playerObj.localScale.x, startYScale, playerObj.localScale.z);
+        
+        playerCam.DoSprintSlideFov(playerCam.baseFov);
     }
 }
