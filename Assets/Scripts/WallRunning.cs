@@ -92,16 +92,6 @@ public class WallRunning : MonoBehaviour
 
     private void CheckForWall() 
     {
-        Vector3 wallNormal = wallRight ? rightWallhit.normal : leftWallhit.normal;
-        Vector3 wallForward = Vector3.Cross(wallNormal, transform.up);
-
-        if ((playerCamTransform.forward - wallForward).magnitude > (playerCamTransform.forward - -wallForward).magnitude)
-            wallForward = -wallForward;
-
-        float tiltAngle = Vector3.SignedAngle(playerCamTransform.forward, wallForward, Vector3.up);
-        
-        Debug.DrawRay(transform.position, playerCamTransform.transform.right, Color.red);
-        
         wallRight = Physics.Raycast(transform.position, playerCamTransform.transform.right, out rightWallhit, wallCheckDistance, whatIsWall);
         wallLeft = Physics.Raycast(transform.position, -playerCamTransform.transform.right, out leftWallhit, wallCheckDistance, whatIsWall);
     }
@@ -169,9 +159,6 @@ public class WallRunning : MonoBehaviour
 
         // apply camera effects
         playerCam.DoWallRunFov(playerCam.baseFov * 1.1f);
-        
-        Debug.Log("wall right : " + wallRight);
-        Debug.Log("wall left : " + wallLeft);
         
         if (wallRight)
             playerCam.DoWallRunTilt(5f);
