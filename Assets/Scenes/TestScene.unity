@@ -183,7 +183,8 @@ MonoBehaviour:
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_fontSharedMaterials: []
+  m_fontSharedMaterials:
+  - {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
@@ -374,7 +375,6 @@ GameObject:
   - component: {fileID: 185312903}
   - component: {fileID: 185312902}
   - component: {fileID: 185312901}
-  - component: {fileID: 185312905}
   m_Layer: 0
   m_Name: Target (2)
   m_TagString: Untagged
@@ -410,8 +410,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   health: 50
+  targetType: 2
   defaultMat: {fileID: 0}
   destroyedMat: {fileID: 2100000, guid: 0fe74d44a8319174e93052e622175f20, type: 2}
+  tapMat: {fileID: 0}
+  laserMat: {fileID: 0}
+  dualMat: {fileID: 0}
 --- !u!64 &185312902
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -454,7 +458,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 0fe74d44a8319174e93052e622175f20, type: 2}
+  - {fileID: 2100000, guid: bc33e4bb42eda114d9f26960e8f7e405, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -484,22 +488,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 185312899}
   m_Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
---- !u!114 &185312905
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 185312899}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 90666769ce107b643976a85ffd0ce447, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  targetType: 2
-  tapMat: {fileID: 2100000, guid: 9670dd19d139ff64ca825a1796d790b1, type: 2}
-  laserMat: {fileID: 2100000, guid: faff0e40f552192479b787beeb182239, type: 2}
-  dualMat: {fileID: 2100000, guid: bc33e4bb42eda114d9f26960e8f7e405, type: 2}
 --- !u!1 &259508262
 GameObject:
   m_ObjectHideFlags: 0
@@ -1086,7 +1074,8 @@ MonoBehaviour:
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_fontSharedMaterials: []
+  m_fontSharedMaterials:
+  - {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
@@ -3663,7 +3652,6 @@ GameObject:
   - component: {fileID: 1484212531}
   - component: {fileID: 1484212530}
   - component: {fileID: 1484212529}
-  - component: {fileID: 1484212533}
   m_Layer: 0
   m_Name: Target (1)
   m_TagString: Untagged
@@ -3699,8 +3687,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   health: 50
+  targetType: 1
   defaultMat: {fileID: 0}
   destroyedMat: {fileID: 2100000, guid: 0fe74d44a8319174e93052e622175f20, type: 2}
+  tapMat: {fileID: 0}
+  laserMat: {fileID: 0}
+  dualMat: {fileID: 0}
 --- !u!64 &1484212530
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -3743,7 +3735,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 0fe74d44a8319174e93052e622175f20, type: 2}
+  - {fileID: 2100000, guid: faff0e40f552192479b787beeb182239, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -3773,22 +3765,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1484212527}
   m_Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
---- !u!114 &1484212533
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1484212527}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 90666769ce107b643976a85ffd0ce447, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  targetType: 1
-  tapMat: {fileID: 2100000, guid: 9670dd19d139ff64ca825a1796d790b1, type: 2}
-  laserMat: {fileID: 2100000, guid: faff0e40f552192479b787beeb182239, type: 2}
-  dualMat: {fileID: 2100000, guid: bc33e4bb42eda114d9f26960e8f7e405, type: 2}
 --- !u!1 &1512024520
 GameObject:
   m_ObjectHideFlags: 0
@@ -5047,7 +5023,6 @@ GameObject:
   - component: {fileID: 2134017052}
   - component: {fileID: 2134017051}
   - component: {fileID: 2134017050}
-  - component: {fileID: 2134017054}
   m_Layer: 0
   m_Name: Target
   m_TagString: Untagged
@@ -5083,8 +5058,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   health: 50
+  targetType: 0
   defaultMat: {fileID: 0}
   destroyedMat: {fileID: 2100000, guid: 0fe74d44a8319174e93052e622175f20, type: 2}
+  tapMat: {fileID: 0}
+  laserMat: {fileID: 0}
+  dualMat: {fileID: 0}
 --- !u!64 &2134017051
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -5127,7 +5106,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 0fe74d44a8319174e93052e622175f20, type: 2}
+  - {fileID: 2100000, guid: 9670dd19d139ff64ca825a1796d790b1, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -5157,22 +5136,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2134017048}
   m_Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
---- !u!114 &2134017054
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2134017048}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 90666769ce107b643976a85ffd0ce447, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  targetType: 0
-  tapMat: {fileID: 2100000, guid: 9670dd19d139ff64ca825a1796d790b1, type: 2}
-  laserMat: {fileID: 2100000, guid: faff0e40f552192479b787beeb182239, type: 2}
-  dualMat: {fileID: 2100000, guid: bc33e4bb42eda114d9f26960e8f7e405, type: 2}
 --- !u!1001 &4147604297722934439
 PrefabInstance:
   m_ObjectHideFlags: 0

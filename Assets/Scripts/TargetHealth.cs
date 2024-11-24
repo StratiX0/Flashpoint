@@ -4,19 +4,50 @@ using UnityEngine;
 
 public class TargetHealth : MonoBehaviour
 {
-    private TargetHealth Instance { get; set; }
+    public TargetHealth Instance { get; set; }
     
     [Header("Health Settings")]
     [SerializeField] private float health;
 
+    [Header("Target Settings")]
+    public Type targetType;
+    
     [Header("Materials")]
     public Material defaultMat;
-    public Material destroyedMat;
-    private Material _currentMat;
+    [SerializeField] private Material destroyedMat;
+    [SerializeField] private Material tapMat;
+    [SerializeField] private Material laserMat;
+    [SerializeField] private Material dualMat;
+    
+    public enum Type
+    {
+        Tap,
+        Laser,
+        Dual
+    }
     
     private void Awake()
     {
         Instance = this;
+        
+        destroyedMat = Resources.Load<Material>("Target Materials/Target Destroyed");
+        tapMat = Resources.Load<Material>("Target Materials/Target Tap");
+        laserMat = Resources.Load<Material>("Target Materials/Target Laser");
+        dualMat = Resources.Load<Material>("Target Materials/Target Dual");
+        
+        if (targetType == Type.Tap)
+        {
+            defaultMat = tapMat;
+        }
+        else if (targetType == Type.Laser)
+        {
+            defaultMat = laserMat;
+        }
+        else if (targetType == Type.Dual)
+        {
+            defaultMat = dualMat;
+        }
+        
         SetMaterial(defaultMat);
     }
     

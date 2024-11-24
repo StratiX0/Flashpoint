@@ -26,7 +26,6 @@ public class Shoot : MonoBehaviour
     [SerializeField] private float muzzleLightTime;
     [SerializeField] private GameObject impactEffect;
     [SerializeField] private GameObject impactEffectFolder;
-    [SerializeField] private GameObject laserBeam;
     
     private void Awake()
     {
@@ -73,11 +72,6 @@ public class Shoot : MonoBehaviour
         {
             ShootFireTwo();
         }
-        
-        if (_fireTwoState == 0f) // If the player is shooting with the secondary shoot method
-        {
-            laserBeam.SetActive(false);
-        }
     }
     
     // Shoots a single bullet on click
@@ -91,8 +85,8 @@ public class Shoot : MonoBehaviour
         if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out hit)) // Shoots a raycast from the camera
         {
             TargetHealth targetHealth = hit.transform.GetComponent<TargetHealth>();
-            Target target = hit.transform.GetComponent<Target>();
-            if (targetHealth != null && target != null && (target.GetTargetType() == Target.Type.Tap || target.GetTargetType() == Target.Type.Dual))
+            TargetHealth.Type type = targetHealth.targetType;
+            if (targetHealth != null && (type == TargetHealth.Type.Tap || type == TargetHealth.Type.Dual))
             {
                 targetHealth.TakeDamage(primaryDamage); // Deals damage to the target
             }
@@ -114,14 +108,12 @@ public class Shoot : MonoBehaviour
     // Shoots a continuous beam
     private void ShootFireTwo()
     {
-        laserBeam.SetActive(true);
-        
         RaycastHit hit;
         if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out hit)) // Shoots a raycast from the camera
         {
             TargetHealth targetHealth = hit.transform.GetComponent<TargetHealth>();
-            Target target = hit.transform.GetComponent<Target>();
-            if (targetHealth != null && target != null && (target.GetTargetType() == Target.Type.Laser || target.GetTargetType() == Target.Type.Dual))
+            TargetHealth.Type type = targetHealth.targetType;
+            if (targetHealth != null && (type == TargetHealth.Type.Laser || type == TargetHealth.Type.Dual))
             {
                 targetHealth.TakeDamage(secondaryDamage * Time.deltaTime); // Deals damage to the target
             }
