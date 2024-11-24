@@ -7,13 +7,17 @@ using UnityEngine.Serialization;
 
 public class PlayerMovement : MonoBehaviour
 {
-    [FormerlySerializedAs("_moveSpeed")] [Header("Movement")]
+    [Header("Movement")]
     public float moveSpeed;
     public float walkSpeed;
     public float sprintSpeed;
+    public float crouchSpeed;
+    public float slideSpeed;
+    public float wallrunSpeed;
     public float speedVelocity;
     public float speedFlatVelocity;
-    
+
+    public bool wallRunning;
     public float desiredMoveSpeed;
     private float _lastDesiredMoveSpeed;
     
@@ -30,13 +34,11 @@ public class PlayerMovement : MonoBehaviour
     public bool readyToJump;
 
     [Header("Crouching")]
-    public float crouchSpeed;
     public float crouchYScale;
     public float standYScale;
     public bool crouchForceApplied;
 
     [Header("Sliding")]
-    public float slideSpeed;
     public bool sliding;
     private bool _slideOccured;
     private float _updatedSlideSpeed;
@@ -77,6 +79,7 @@ public class PlayerMovement : MonoBehaviour
         Sprinting,
         Crouching,
         Sliding,
+        WallRunning,
         Air
     }
 
@@ -196,8 +199,14 @@ public class PlayerMovement : MonoBehaviour
 
     private void StateHandler()
     {
+        if (wallRunning)
+        {
+            state = MovementState.WallRunning;
+            desiredMoveSpeed = wallrunSpeed;
+        }
+        
         // Mode - Sliding
-        if (sliding)
+        else if (sliding)
         {
             state = MovementState.Sliding;
             
@@ -212,7 +221,7 @@ public class PlayerMovement : MonoBehaviour
         }
         
         // Mode - Crouching
-        else if (_crouchInput != 0f && !sliding)
+        else if (_crouchInput != 0f && !sliding && !wallRunning)
         {
             if (state != MovementState.Air) desiredMoveSpeed = crouchSpeed;
             state = MovementState.Crouching;

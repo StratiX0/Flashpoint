@@ -209,6 +209,7 @@ GameObject:
   - component: {fileID: 84850668}
   - component: {fileID: 84850674}
   - component: {fileID: 84850676}
+  - component: {fileID: 84850677}
   - component: {fileID: 84850675}
   m_Layer: 0
   m_Name: Capsule
@@ -331,6 +332,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1158909890}
+  - {fileID: 681777023}
   m_Father: {fileID: 291371347}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &84850674
@@ -346,10 +348,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 0
-  walkSpeed: 7
+  walkSpeed: 10
   sprintSpeed: 15
+  crouchSpeed: 2
+  slideSpeed: 20
+  wallrunSpeed: 8.5
   speedVelocity: 0
   speedFlatVelocity: 0
+  wallRunning: 0
   desiredMoveSpeed: 0
   groundDrag: 5
   speedCurve:
@@ -404,11 +410,9 @@ MonoBehaviour:
   jumpCooldown: 0.25
   airMultiplier: 0.4
   readyToJump: 1
-  crouchSpeed: 2
   crouchYScale: 0.5
   standYScale: 0
   crouchForceApplied: 0
-  slideSpeed: 20
   sliding: 0
   moveAction: {fileID: -320623155567424179, guid: b2a7dc9552d06ba46af2610c86e21790,
     type: 3}
@@ -474,6 +478,36 @@ MonoBehaviour:
     type: 3}
   sprintAction: {fileID: 1750032494839024022, guid: b2a7dc9552d06ba46af2610c86e21790,
     type: 3}
+--- !u!114 &84850677
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 84850667}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f7d84a8cb50308489829785e15a46c7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  whatIsWall:
+    serializedVersion: 2
+    m_Bits: 64
+  whatIsGround:
+    serializedVersion: 2
+    m_Bits: 1
+  wallRunForce: 300
+  wallClimbSpeed: 3
+  maxWallRunTime: 3
+  moveAction: {fileID: -320623155567424179, guid: b2a7dc9552d06ba46af2610c86e21790,
+    type: 3}
+  crouchAction: {fileID: -1650039698201726915, guid: b2a7dc9552d06ba46af2610c86e21790,
+    type: 3}
+  sprintAction: {fileID: 1750032494839024022, guid: b2a7dc9552d06ba46af2610c86e21790,
+    type: 3}
+  wallCheckDistance: 1
+  minJumpHeight: 1
+  orientation: {fileID: 681777023}
 --- !u!1 &97254104
 GameObject:
   m_ObjectHideFlags: 0
@@ -1407,7 +1441,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 84850672}
-  - {fileID: 681777023}
   - {fileID: 330585546}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1498,14 +1531,14 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: 0.21218069, y: 0.25266132, z: -0.056893338, w: 0.942287}
+  m_LocalPosition: {x: 16.56, y: 6.6, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 503779929}
   m_Father: {fileID: 291371347}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 25.38, y: 30.02, z: 0}
 --- !u!114 &330585547
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2613,7 +2646,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 649140073}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Walls
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2663,12 +2696,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 681777022}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -16.54, y: -3.47, z: -16.69}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 291371347}
+  m_Father: {fileID: 84850672}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &692379459
 GameObject:
@@ -3417,7 +3450,7 @@ GameObject:
   - component: {fileID: 1129064216}
   - component: {fileID: 1129064215}
   - component: {fileID: 1129064214}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3633,7 +3666,7 @@ GameObject:
   - component: {fileID: 1284114788}
   - component: {fileID: 1284114787}
   - component: {fileID: 1284114786}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Cube (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4124,7 +4157,7 @@ GameObject:
   - component: {fileID: 1512024523}
   - component: {fileID: 1512024522}
   - component: {fileID: 1512024521}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Cube (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4347,7 +4380,7 @@ GameObject:
   - component: {fileID: 1524576383}
   - component: {fileID: 1524576382}
   - component: {fileID: 1524576381}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Cube (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
