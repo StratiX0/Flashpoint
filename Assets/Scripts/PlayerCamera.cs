@@ -79,4 +79,9 @@ public class PlayerCamera : MonoBehaviour
     {
         LMotion.Create(_zRotation, tiltTarget, 0.25f).WithEase(Ease.InSine).Bind(x => _zRotation = x);
     }
+    
+    public void SetSensitivity(string newSensitivity)
+    {
+        sensitivity = float.Parse(newSensitivity);
+    }
 }

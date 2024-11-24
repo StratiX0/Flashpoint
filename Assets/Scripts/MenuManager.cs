@@ -105,4 +105,10 @@ public class MenuManager : MonoBehaviour
         if (cameraController != null)
             cameraController.enabled = true;
     }
+    
+    public void QuitGame()
+    {
+        Application.Quit();
+        Debug.Log("Game is quitting");
+    }
 }
